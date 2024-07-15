@@ -5,9 +5,22 @@ use anyhow::Result;
 use rss::Channel;
 use std::io;
 
+fn without_tags(text: String) -> String {
+    text.replace("<p>", "")
+        .replace("</p>", "")
+        .replace("<strong>", "")
+        .replace("</strong>", "")
+        .replace("<h2>", "")
+        .replace("</h2>", "")
+        .replace("<br>", "")
+        .replace("&nbsp", "")
+        .replace(".;", ".")
+}
+
 async fn fetch_rss_feed(url: &str) -> Result<Channel, anyhow::Error> {
-    let res = reqwest::get(url).await?.text().await?;
-    let channel = res.parse::<Channel>()?;
+    let response = reqwest::get(url).await?;
+    let content = response.text().await?;
+    let channel = content.parse::<Channel>()?;
     Ok(channel)
 }
 
@@ -61,7 +74,7 @@ fn print_channel(channel: Channel) {
         println!("Link: {}", item.link().unwrap_or("No link"));
         println!(
             "Description: {}",
-            item.description().unwrap_or("No description")
+            without_tags(item.description().unwrap_or("No description").to_string())
         );
         println!(
             "Publish Date: {}",
