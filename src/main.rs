@@ -50,18 +50,7 @@ fn select_rss_feed() -> &'static str {
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<()> {
-    let url = select_rss_feed();
-
-    let channel = match fetch_rss_feed(url).await {
-        Ok(channel) => channel,
-        Err(e) => {
-            eprintln!("Error fetching RSS feed: {}", e);
-            return Err(e);
-        }
-    };
-
+fn print_channel(channel: Channel) {
     println!("Feed Title: {}", channel.title());
     println!("Feed Description: {}", channel.description());
     println!("Feed Link: {}", channel.link());
@@ -80,6 +69,21 @@ async fn main() -> Result<()> {
         );
         println!();
     }
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let url = select_rss_feed();
+
+    let channel = match fetch_rss_feed(url).await {
+        Ok(channel) => channel,
+        Err(e) => {
+            eprintln!("Error fetching RSS feed: {}", e);
+            return Err(e);
+        }
+    };
+
+    print_channel(channel);
 
     Ok(())
 }
