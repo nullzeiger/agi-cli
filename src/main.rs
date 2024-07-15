@@ -1,3 +1,6 @@
+// Copyright (c) 2024 Ivan Guerreschi. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 use anyhow::Result;
 use rss::Channel;
 use std::io;
