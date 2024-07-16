@@ -1,94 +1,14 @@
 // Copyright (c) 2024 Ivan Guerreschi. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-use anyhow::Result;
-use rss::Channel;
-use std::io;
-
-fn without_tags(text: String) -> String {
-    text.replace("<p>", "")
-        .replace("</p>", "")
-        .replace("<strong>", "")
-        .replace("</strong>", "")
-        .replace("<h2>", "")
-        .replace("</h2>", "")
-        .replace("<br>", "")
-        .replace("&nbsp", "")
-        .replace(".;", ".")
-}
-
-async fn fetch_rss_feed(url: &str) -> Result<Channel, anyhow::Error> {
-    let response = reqwest::get(url).await?;
-    let content = response.text().await?;
-    let channel = content.parse::<Channel>()?;
-    Ok(channel)
-}
-
-fn select_rss_feed() -> &'static str {
-    let urls = [
-        "https://www.agi.it/cronaca/rss",
-        "https://www.agi.it/economia/rss",
-        "https://www.agi.it/politica/rss",
-        "https://www.agi.it/estero/rss",
-        "https://www.agi.it/cultura/rss",
-        "https://www.agi.it/sport/rss",
-        "https://www.agi.it/innovazione/rss",
-        "https://www.agi.it/lifestyle/rss",
-    ];
-
-    loop {
-        println!("Agi rss number");
-        println!("0 to cronaca");
-        println!("1 to economia");
-        println!("2 to politica");
-        println!("3 to estero");
-        println!("4 to cultura");
-        println!("5 to sport");
-        println!("6 to innovazione");
-        println!("7 to lifestyle");
-        print!("Select number rss: ");
-
-        let mut url = String::new();
-
-        io::stdin()
-            .read_line(&mut url)
-            .expect("Failed to read line");
-
-        let num: usize = match url.trim().parse() {
-            Ok(num) => num,
-            Err(_) => continue,
-        };
-
-        return urls[num];
-    }
-}
-
-fn print_channel(channel: Channel) {
-    println!("Feed Title: {}", channel.title());
-    println!("Feed Description: {}", channel.description());
-    println!("Feed Link: {}", channel.link());
-    println!("\nItems:\n");
-
-    for item in channel.items() {
-        println!("Title: {}", item.title().unwrap_or("No title"));
-        println!("Link: {}", item.link().unwrap_or("No link"));
-        println!(
-            "Description: {}",
-            without_tags(item.description().unwrap_or("No description").to_string())
-        );
-        println!(
-            "Publish Date: {}",
-            item.pub_date().unwrap_or("No publish date")
-        );
-        println!();
-    }
-}
+use agi_cli::fetch;
+use agi_cli::input_output;
 
 #[tokio::main]
-async fn main() -> Result<()> {
-    let url = select_rss_feed();
+async fn main() -> Result<(), anyhow::Error> {
+    let url = input_output::select_rss_feed();
 
-    let channel = match fetch_rss_feed(url).await {
+    let channel = match fetch::rss_feed(url).await {
         Ok(channel) => channel,
         Err(e) => {
             eprintln!("Error fetching RSS feed: {}", e);
@@ -96,7 +16,7 @@ async fn main() -> Result<()> {
         }
     };
 
-    print_channel(channel);
+    input_output::print_channel(channel);
 
     Ok(())
 }
