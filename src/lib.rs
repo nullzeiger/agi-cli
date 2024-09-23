@@ -11,9 +11,13 @@ pub mod fetch {
 }
 
 pub mod input_output {
+    use std::process;
+
     pub fn without_tags(text: String) -> String {
         text.replace("<p>", "")
             .replace("</p>", "")
+            .replace("<div>", "")
+            .replace("</div>", "")
             .replace("<strong>", "")
             .replace("</strong>", "")
             .replace("<h2>", "")
@@ -21,6 +25,7 @@ pub mod input_output {
             .replace("<br>", "")
             .replace("&nbsp", "")
             .replace(".;", ".")
+            .replace(";", "")
     }
 
     pub fn select_rss_feed() -> &'static str {
@@ -36,7 +41,7 @@ pub mod input_output {
         ];
 
         loop {
-            println!("Agi rss number");
+            println!("Agi rss number (q for exit)");
             println!("0 to cronaca");
             println!("1 to economia");
             println!("2 to politica");
@@ -52,6 +57,10 @@ pub mod input_output {
             std::io::stdin()
                 .read_line(&mut url)
                 .expect("Failed to read line");
+
+            if url.trim() == "q" {
+                process::exit(0);
+            }
 
             let num: usize = match url.trim().parse() {
                 Ok(num) => num,
